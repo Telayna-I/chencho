@@ -8,6 +8,7 @@ import { existsSync, lstatSync } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { CMD, CMD_ENV } from "./config.ts";
 import { isSessionId } from "./protocol-guard.ts";
 import { findTranscriptSession, PROJECTS_DIR } from "./transcripts.ts";
 
@@ -65,8 +66,8 @@ export async function planOpen(
   const shell = has("pwsh.exe") ? "pwsh.exe" : "powershell.exe";
   // Bun can't spawn app execution aliases such as wt.exe, but cmd.exe can.
   const command = has("wt.exe")
-    ? ["cmd.exe", "/d", "/c", "wt.exe", "-w", "0", "new-tab", "-d", ".", shell, "-NoExit", "-Command", "claude", "--resume", sessionId]
-    : ["cmd.exe", "/d", "/c", "start", "", shell, "-NoExit", "-Command", `claude --resume ${sessionId}`];
+    ? [CMD, "/d", "/c", "wt.exe", "-w", "0", "new-tab", "-d", ".", shell, "-NoExit", "-Command", "claude", "--resume", sessionId]
+    : [CMD, "/d", "/c", "start", "", shell, "-NoExit", "-Command", `claude --resume ${sessionId}`];
   return { ok: true, command, cwd };
 }
 
@@ -74,7 +75,7 @@ export async function openSession(sessionId: string): Promise<OpenResult> {
   const plan = await planOpen(sessionId);
   if (!plan.ok) return plan;
 
-  const proc = Bun.spawn(plan.command, { cwd: plan.cwd, stdout: "ignore", stderr: "pipe", windowsHide: true });
+  const proc = Bun.spawn(plan.command, { cwd: plan.cwd, env: CMD_ENV, stdout: "ignore", stderr: "pipe", windowsHide: true });
   const code = await proc.exited;
   if (code !== 0) {
     const stderr = (await new Response(proc.stderr).text()).trim().slice(0, 200);

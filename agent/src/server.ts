@@ -8,7 +8,7 @@ import { basename } from "node:path";
 import type { LibraryEntry, ServerMessage } from "../../shared/protocol.ts";
 import type { SessionHub } from "./hub.ts";
 import { openSession, type OpenResult } from "./open-session.ts";
-import { parseClientMessage } from "./protocol-guard.ts";
+import { isSessionId, parseClientMessage } from "./protocol-guard.ts";
 import type { HookEvent } from "./state.ts";
 import { findTranscriptSession, listTranscriptSessions, type TranscriptSession } from "./transcripts.ts";
 
@@ -59,9 +59,14 @@ export function startServers({
     async fetch(req) {
       const { pathname } = new URL(req.url);
       if (req.method !== "POST" || pathname !== "/hook") return new Response("not found", { status: 404 });
+      // A web page can post to 127.0.0.1 too. Browsers send an Origin header with such a request, and
+      // can't send application/json across origins without a preflight, which this server never answers.
+      if (req.headers.has("origin") || !req.headers.get("content-type")?.startsWith("application/json")) {
+        return new Response("forbidden", { status: 403 });
+      }
       try {
         const event = (await req.json()) as HookEvent;
-        if (typeof event?.session_id === "string" && typeof event.hook_event_name === "string") hub.handleHook(event);
+        if (isSessionId(event?.session_id) && typeof event.hook_event_name === "string") hub.handleHook(event);
       } catch {
         return new Response("bad json", { status: 400 });
       }

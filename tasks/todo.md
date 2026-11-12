@@ -11,6 +11,11 @@
 - [x] Reinstalar en esta PC: `uninstall` de la instalación anterior (datos conservados), anclajes, token y preferencias copiados a %LOCALAPPDATA%\chencho, `chencho setup`; `status` OK, 13 hooks con el comando nuevo, el resto de settings.json idéntico
 - [x] Historia de git nueva (sin la historia anterior), commit inicial como telayna-i y push a github.com/Telayna-I/chencho
 
+## Revisión de seguridad del commit inicial
+- [x] cmd.exe por ruta completa y sin buscar en la carpeta de la sesión (D-013); verificado con un exe plantado
+- [x] /hook rechaza páginas web y ids que no son UUID (D-013); hooks reales siguen llegando
+- [x] 70/70, reinstalado, commit y push
+
 ## Sesión que volvía a «trabajando» al cerrarse
 - [x] Causa: un poll de `claude agents` que arrancó antes del cierre llega después del SessionEnd y la revivía ~12 s
 - [x] Fix en `reconcileOne`: dentro de GRACE_MS manda el SessionEnd (D-012); test nuevo (68/68)

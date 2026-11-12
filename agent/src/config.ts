@@ -19,6 +19,14 @@ export const CLAUDE_SETTINGS = join(HOME, ".claude", "settings.json");
 export const CONFIG_FILE = join(DATA_DIR, "config.json");
 
 /**
+ * cmd.exe by its full path, run with an environment where it skips its working directory when
+ * it looks for a program. Windows looks for a bare name there first, and the working directory
+ * can be a session's folder, so any repository: an .exe planted in it must never run.
+ */
+export const CMD = join(process.env.SystemRoot || "C:\\Windows", "System32", "cmd.exe");
+export const CMD_ENV = { ...process.env, NoDefaultCurrentDirectoryInExePath: "1" };
+
+/**
  * WebSocket URLs other devices on the LAN can use to reach this PC: its IPv4 addresses
  * (Ethernet/Wi-Fi first, ahead of virtual switches such as "vEthernet (WSL)"), then its
  * mDNS name. IPs come first because some routers drop mDNS between WiFi clients; the name

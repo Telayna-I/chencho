@@ -89,3 +89,12 @@ ADR-lite. Entries are never edited or deleted; a later entry supersedes an earli
 - **Why:** `claude agents` takes a second or two to answer, so a poll that started just before a session closed lists it after its SessionEnd. That brought the creature back as "working" for about 12 s after each close (seen on the first try with a throwaway `claude -p` session).
 - **Verified:** a new state test (`a poll that raced the session's end doesn't bring it back`); three throwaway sessions in a row went working → done → ended and stayed ended.
 - **Discarded:** ignoring the poll for ended sessions altogether, which would keep a session resumed without hooks (e.g. after `setup` was undone and redone) ended until its next hook.
+
+## D-013 — cmd.exe by full path without a working-directory search; the hook endpoint refuses web pages
+- **Decision:**
+  - Every cmd.exe the agent starts (resuming a session, removing `bin\` after uninstall) runs by its full path, `%SystemRoot%\System32\cmd.exe`, with `NoDefaultCurrentDirectoryInExePath=1` in its environment (`CMD` / `CMD_ENV` in config.ts).
+  - `/hook` answers 403 to a request with an `Origin` header or without `Content-Type: application/json`, and ignores events whose `session_id` isn't a UUID.
+- **Why:**
+  - A resume runs with the session's folder as the working directory (D-006), and that folder can be any repository. cmd.exe looks for `wt.exe` / `pwsh.exe` there before PATH, so an exe planted in a repo would run on a click. Verified: with an env without the variable, a `pwsh.exe` planted in the folder ran; with `CMD_ENV`, the real one did. Claude Code sets the variable for its own children, which hid this in manual tests, but the agent starts at login from the Run key and doesn't inherit it.
+  - Any web page can POST to 127.0.0.1. Browsers always send `Origin` on such a request and can't send `application/json` across origins without a CORS preflight, which this server never answers; the hook command (D-011) sends that content type and no Origin. A page could only have spoofed what the strip shows, never run anything, but it's a two-line check.
+- **Discarded:** a shared secret in the hook command (settings.json is readable by the same user anyway, and any local process can already do more than spoof the strip); moving the folder onto cmd.exe's command line (breaks on `&`, `^`, `%`, see D-006).

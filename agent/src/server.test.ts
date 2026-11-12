@@ -83,6 +83,19 @@ test("the network-facing port does not accept hook events", async () => {
   expect(res.status).toBe(404);
 });
 
+test("hook posts from a web page, posts that aren't JSON, and bad session ids are dropped", async () => {
+  const body = JSON.stringify({ hook_event_name: "UserPromptSubmit", session_id: ID, cwd: "/tmp" });
+  const json = { "Content-Type": "application/json" };
+  const fromPage = await fetch(hookUrl(), { method: "POST", headers: { ...json, Origin: "https://example.com" }, body });
+  const plainText = await fetch(hookUrl(), { method: "POST", headers: { "Content-Type": "text/plain" }, body });
+  expect([fromPage.status, plainText.status]).toEqual([403, 403]);
+  expect((await postHook({ hook_event_name: "UserPromptSubmit", session_id: "../x", cwd: "/tmp" })).status).toBe(204);
+
+  const { ws, next } = await connect();
+  expect(await next()).toEqual({ type: "snapshot", sessions: [], focusedId: null });
+  ws.close();
+});
+
 test("the panel gets a snapshot, then live updates from hooks", async () => {
   const { ws, next } = await connect();
   expect(await next()).toEqual({ type: "snapshot", sessions: [], focusedId: null });

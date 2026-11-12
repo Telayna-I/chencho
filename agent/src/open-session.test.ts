@@ -2,6 +2,7 @@ import { afterAll, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { CMD } from "./config.ts";
 import { onPath, planOpen } from "./open-session.ts";
 
 const ID = "0603472f-b7c5-4dae-b7a1-142468264b30";
@@ -27,7 +28,7 @@ const having = (...exes: string[]) => ({ liveDir, projectsDir, has: (exe: string
 test("resumes in a new Windows Terminal tab, in the session's folder", async () => {
   expect(await planOpen(ID, having("wt.exe", "pwsh.exe"))).toEqual({
     ok: true,
-    command: ["cmd.exe", "/d", "/c", "wt.exe", "-w", "0", "new-tab", "-d", ".", "pwsh.exe", "-NoExit", "-Command", "claude", "--resume", ID],
+    command: [CMD, "/d", "/c", "wt.exe", "-w", "0", "new-tab", "-d", ".", "pwsh.exe", "-NoExit", "-Command", "claude", "--resume", ID],
     cwd,
   });
 });
@@ -35,9 +36,13 @@ test("resumes in a new Windows Terminal tab, in the session's folder", async () 
 test("without Windows Terminal or PowerShell 7, a console window with Windows PowerShell", async () => {
   expect(await planOpen(ID, having())).toEqual({
     ok: true,
-    command: ["cmd.exe", "/d", "/c", "start", "", "powershell.exe", "-NoExit", "-Command", `claude --resume ${ID}`],
+    command: [CMD, "/d", "/c", "start", "", "powershell.exe", "-NoExit", "-Command", `claude --resume ${ID}`],
     cwd,
   });
+});
+
+test("cmd.exe runs by its full path, so an exe planted in the session's folder can't stand in for it", () => {
+  expect(CMD.toLowerCase()).toMatch(/^[a-z]:\\windows\\system32\\cmd\.exe$/);
 });
 
 test("refuses a session that is running, or that can't be resumed", async () => {

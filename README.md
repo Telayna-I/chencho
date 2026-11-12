@@ -135,6 +135,7 @@ Al subir un tag `v*` se ejecuta `.github/workflows/release.yml`: corre los tests
 ## Privacidad
 
 - **Nada sale de tu PC.** La franja solo habla con el agente en 127.0.0.1, y el agente solo escucha ahí, salvo el WebSocket si se instaló con `--pi`. Sin telemetría.
+- **Hooks solo desde Claude Code.** El endpoint de los hooks rechaza los pedidos que vienen de una página web (con encabezado `Origin` o sin `Content-Type: application/json`).
 - **Token de emparejamiento.** El WebSocket pide el token de `%LOCALAPPDATA%\chencho\config.json` y solo acepta `open`, `pin`, `icon` y `library`, con los argumentos validados.
 - **Dónde guarda Chencho sus cosas.** Todo está en `%LOCALAPPDATA%\chencho\`:
   - `bin\`: los binarios;

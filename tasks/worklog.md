@@ -101,3 +101,10 @@
 - Reinstalado en esta PC: `uninstall` de la instalación anterior conservando datos, copia de config.json, overlay.json y la base (con su WAL) a `%LOCALAPPDATA%\chencho`, `chencho setup`. `status`: franja y agente corriendo, hooks instalados, 22 sesiones; settings.json igual salvo los 13 hooks con el comando nuevo.
 - Git: historia nueva desde cero (la anterior no tenía commits propios ni stashes), remoto `origin` = github.com/Telayna-I/chencho, commit inicial como telayna-i.
 - Archivos: todo el árbol (renombres), agent/src/state.ts, agent/src/state.test.ts, docs/decisions.md (D-012), tasks/*.
+
+## 2026-11-11 — Endurecimiento: cmd.exe sin búsqueda en la carpeta y /hook sin páginas web
+- Origen: revisión automática de seguridad del commit inicial (2 hallazgos).
+- cmd.exe ahora corre por ruta completa y con `NoDefaultCurrentDirectoryInExePath=1` (`CMD` / `CMD_ENV` en config.ts), al reanudar sesiones y al borrar `bin\` tras `uninstall`. Verificado con un `pwsh.exe` plantado en la carpeta de trabajo: sin la variable corría el plantado, con `CMD_ENV` corre el real (y los alias de WindowsApps se siguen encontrando por PATH). Claude Code define esa variable para sus hijos, por eso no se veía en las pruebas manuales; el agente arranca desde la clave Run y no la hereda.
+- `/hook` responde 403 con encabezado `Origin` o sin `Content-Type: application/json`, e ignora `session_id` que no sea UUID. Verificado: hooks reales de una sesión `claude -p` siguen llegando (idle → working → done → ended); un POST con Origin da 403.
+- Tests: 70/70 (2 nuevos: cmd.exe por ruta completa; /hook rechaza página web, texto plano e id inválido). D-013, línea nueva en Privacidad del README.
+- Archivos: agent/src/config.ts, open-session.ts, open-session.test.ts, install.ts, server.ts, server.test.ts, README.md, docs/decisions.md.

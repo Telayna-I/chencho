@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { copyFile, mkdir, readdir, rename, rm } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 import { register, start, stop, unregister } from "./autostart.ts";
-import { BIN_DIR, CLAUDE_SETTINGS, DATA_DIR, LOG_DIR, loadConfig, panelUrls } from "./config.ts";
+import { BIN_DIR, CLAUDE_SETTINGS, CMD, CMD_ENV, DATA_DIR, LOG_DIR, loadConfig, panelUrls } from "./config.ts";
 import { t } from "./i18n.ts";
 import { writeHooks } from "./settings.ts";
 
@@ -122,8 +122,9 @@ function isYes(answer: string | null): boolean {
  */
 function removeAfterExit(dir: string) {
   const command = `ping -n 3 127.0.0.1 >nul & rmdir /s /q ${basename(dir)}`;
-  Bun.spawn(["cmd.exe", "/d", "/c", command], {
+  Bun.spawn([CMD, "/d", "/c", command], {
     cwd: dirname(dir),
+    env: CMD_ENV,
     detached: true,
     stdio: ["ignore", "ignore", "ignore"],
     windowsHide: true,

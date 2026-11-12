@@ -1,0 +1,28 @@
+{
+  "name": "chencho",
+  "version": "0.0.0",
+  "description": "Your Claude Code sessions as animated pixel-art creatures on the edge of your Windows screen",
+  "license": "MIT",
+  "homepage": "https://github.com/Telayna-I/chencho",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Telayna-I/chencho.git"
+  },
+  "type": "module",
+  "bin": {
+    "chencho": "bin/chencho.js"
+  },
+  "files": [
+    "bin",
+    "lib/platform.js"
+  ],
+  "os": [
+    "win32"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "optionalDependencies": {
+    "chencho-win32-x64": "0.0.0"
+  }
+}

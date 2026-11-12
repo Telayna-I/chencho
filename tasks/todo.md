@@ -5,6 +5,13 @@
 - [ ] Opcional: publicar en npm (`npm/chencho/package.json` + `scripts/release.ts` ya arman `chencho` y `chencho-win32-x64`; el workflow publica al subir un tag `v*`).
 - [ ] Opcional: probar en un monitor con escala ≠ 100 % (los píxeles de sprite a 125 % no caen en píxeles enteros) y con la terminal de VS Code.
 
+## Listo para clonar en otra PC
+- [x] Borrar los 6 backups viejos `settings.json.bak-perch-*` (idénticos al actual salvo los hooks)
+- [x] Clon limpio desde GitHub en una carpeta con espacio y «ñ», `autocrlf=true`: 70/70, 82/82, release OK
+- [x] La franja arranca en `bin\` y no bloquea la carpeta desde donde se corrió setup (D-014)
+- [x] AgentSupervisor: cmd.exe por ruta completa (D-014); verificado con un cmd.exe plantado
+- [ ] Sin probar: Windows 10, escala ≠ 100 %, Windows en ARM
+
 ## Nombre Chencho + repo propio
 - [x] Renombrado (binarios, carpetas, namespaces, datos en %LOCALAPPDATA%\chencho)
 - [x] README en español

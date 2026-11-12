@@ -98,3 +98,12 @@ ADR-lite. Entries are never edited or deleted; a later entry supersedes an earli
   - A resume runs with the session's folder as the working directory (D-006), and that folder can be any repository. cmd.exe looks for `wt.exe` / `pwsh.exe` there before PATH, so an exe planted in a repo would run on a click. Verified: with an env without the variable, a `pwsh.exe` planted in the folder ran; with `CMD_ENV`, the real one did. Claude Code sets the variable for its own children, which hid this in manual tests, but the agent starts at login from the Run key and doesn't inherit it.
   - Any web page can POST to 127.0.0.1. Browsers always send `Origin` on such a request and can't send `application/json` across origins without a CORS preflight, which this server never answers; the hook command (D-011) sends that content type and no Origin. A page could only have spoofed what the strip shows, never run anything, but it's a two-line check.
 - **Discarded:** a shared secret in the hook command (settings.json is readable by the same user anyway, and any local process can already do more than spoof the strip); moving the folder onto cmd.exe's command line (breaks on `&`, `^`, `%`, see D-006).
+
+## D-014 — The overlay runs in its bin folder and starts cmd.exe by full path
+- **Decision:**
+  - `setup` starts the overlay with `bin\` as its working folder, instead of inheriting the folder setup ran from.
+  - The overlay's AgentSupervisor starts `%SystemRoot%\System32\cmd.exe` by full path (`Environment.SystemDirectory`), like the agent does since D-013.
+- **Why:**
+  - A process holds its working folder open, so after `setup` the folder it ran from (usually the clone) couldn't be deleted or renamed until the overlay quit. Verified: `rm -rf` failed with "Device or resource busy".
+  - A bare `cmd.exe` in `Process.Start` is looked up in the overlay's working folder before System32. Verified: with `setup` run from a folder holding a planted `cmd.exe` and an env without `NoDefaultCurrentDirectoryInExePath`, the overlay ran the planted one and the agent didn't start. After the fix, the agent starts on the first try and the folder can be deleted.
+- **Discarded:** setting `NoDefaultCurrentDirectoryInExePath` in the overlay's environment (the full path is simpler and doesn't depend on how the process was started).

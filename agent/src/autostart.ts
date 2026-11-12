@@ -52,9 +52,12 @@ export async function unregister() {
   await $`reg delete ${RUN_KEY} /v ${RUN_VALUE} /f`.quiet().nothrow();
 }
 
-/** Starts the overlay detached, so it outlives setup and the terminal it ran in. */
+/**
+ * Starts the overlay detached, so it outlives setup and the terminal it ran in. It runs in BIN_DIR, not in
+ * the folder setup ran from: a process holds its working folder open, so that folder couldn't be deleted.
+ */
 export function start({ lan }: { lan: boolean }) {
-  Bun.spawn(overlayProgram(BIN_DIR, { lan }), { detached: true, stdio: ["ignore", "ignore", "ignore"] }).unref();
+  Bun.spawn(overlayProgram(BIN_DIR, { lan }), { cwd: BIN_DIR, detached: true, stdio: ["ignore", "ignore", "ignore"] }).unref();
 }
 
 /**

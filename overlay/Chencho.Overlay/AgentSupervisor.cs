@@ -75,7 +75,8 @@ internal sealed class AgentSupervisor
         var command = $"/d /c \"\"{agentPath}\" {arguments} >> \"{log}\" 2>&1\"";
         try
         {
-            child = Process.Start(new ProcessStartInfo("cmd.exe", command)
+            // By full path: a bare "cmd.exe" is looked up in this process's working folder before System32.
+            child = Process.Start(new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe"), command)
             {
                 CreateNoWindow = true,
                 UseShellExecute = false,

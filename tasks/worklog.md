@@ -108,3 +108,10 @@
 - `/hook` responde 403 con encabezado `Origin` o sin `Content-Type: application/json`, e ignora `session_id` que no sea UUID. Verificado: hooks reales de una sesión `claude -p` siguen llegando (idle → working → done → ended); un POST con Origin da 403.
 - Tests: 70/70 (2 nuevos: cmd.exe por ruta completa; /hook rechaza página web, texto plano e id inválido). D-013, línea nueva en Privacidad del README.
 - Archivos: agent/src/config.ts, open-session.ts, open-session.test.ts, install.ts, server.ts, server.test.ts, README.md, docs/decisions.md.
+
+## 2026-11-11 — Listo para clonar en otra PC: clon limpio y dos arreglos
+- Borrados los 6 backups viejos `~/.claude/settings.json.bak-perch-*` (pedido por el usuario); antes se comprobó que, fuera de los hooks, eran idénticos al settings.json actual. Queda el `.bak-chencho-*` de la instalación actual.
+- Clon limpio desde GitHub en una carpeta con espacio y «ñ», con `core.autocrlf=true` (el valor por defecto de Git for Windows), siguiendo el README: `bun install --cwd agent`, `bun test agent npm` 70/70, `dotnet test overlay` 82/82, `bun scripts/release.ts` genera los dos binarios.
+- Comprobado que `$` y `Bun.spawn` de Bun 1.3.8 no toman un exe plantado en la carpeta de trabajo (los `reg`, `tasklist` y `taskkill` de setup/status están bien).
+- Fix (D-014): `setup` arranca la franja con `bin\` como carpeta de trabajo (antes bloqueaba la carpeta desde donde se corrió setup) y AgentSupervisor arranca cmd.exe por ruta completa (antes corría un `cmd.exe` plantado en esa carpeta). Los dos verificados antes y después corriendo setup desde una carpeta con un `cmd.exe` plantado.
+- Archivos: agent/src/autostart.ts, overlay/Chencho.Overlay/AgentSupervisor.cs, docs/decisions.md (D-014), tasks/*.
